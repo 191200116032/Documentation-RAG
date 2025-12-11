@@ -1,11 +1,12 @@
 from groq import Groq
+import os
 
 class GroqLLMProvider:
-    def __init__(self, model="llama-3.3-70b-versatile"):
-        self.model = model
-        self.client = Groq()
+    def __init__(self):
+        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        self.model = "llama-3.3-70b-versatile"
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt):
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[{"role": "user", "content": prompt}]

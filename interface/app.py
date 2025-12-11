@@ -1,69 +1,26 @@
 import sys, os
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, ROOT)
 
-from main import document_loader, vector_store, rag_answer, reset_chat
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 import streamlit as st
+from main import load_document, rag_answer, chat_history
 
 
-st.title("📄 Documentation RAG Assistant")
-st.write("Load a text-file documentation link and ask grounded questions.")
+st.title("📘 Documentation RAG Assistant")
 
-
-# ---------------------------
-# URL INPUT + DOCUMENT LOAD
-# ---------------------------
-
-url = st.text_input("Enter Document URL (.txt only)")
+url = st.text_input("Paste a .txt documentation URL (SvelteKit llms.txt)")
 
 if st.button("Load Document"):
-    if not url:
-        st.error("Please enter a valid URL.")
+    text, msg = load_document(url)
+    if text:
+        st.success(msg)
+        st.text_area("Document Preview", text[:2000], height=200)
     else:
-        st.write("⏳ Loading document...")
-        text = document_loader.load(url)
+        st.error(msg)
 
-        if not text:
-            st.error("❌ Failed to load document.")
-        else:
-            st.success("Document loaded successfully!")
+query = st.text_input("Ask a question:")
 
-            reset_chat()  # NEW: Clear chat history
-
-            splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=50)
-            chunks = splitter.split_text(text)
-
-            vector_store.add_texts(chunks)
-            st.success(f"Indexed {len(chunks)} chunks!")
-
-            st.session_state["doc_loaded"] = True
-else:
-    st.session_state["doc_loaded"] = st.session_state.get("doc_loaded", False)
-
-
-# --------------------------------
-# CHAT INTERFACE (AFTER DOCUMENT)
-# --------------------------------
-
-if st.session_state["doc_loaded"]:
-
-    st.subheader("💬 Chat with Document")
-
-    # Display previous messages
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
-
-    # Chat input
-    user_query = st.chat_input("Ask a question about the document...")
-
-    if user_query:
-        st.session_state.messages.append({"role": "user", "content": user_query})
-        st.chat_message("user").write(user_query)
-
-        answer = rag_answer(user_query)
-
-        st.session_state.messages.append({"role": "assistant", "content": answer})
-        st.chat_message("assistant").write(answer)
+if st.button("Ask"):
+    answer = rag_answer(query)
+    st.write("### 📌 Answer:")
+    st.write(answer)
