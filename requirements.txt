@@ -1,0 +1,12 @@
+streamlit
+
+sentence-transformers
+requests
+python-dotenv
+groq
+langchain
+langgraph
+
+
+chromadb>=0.5.0
+
