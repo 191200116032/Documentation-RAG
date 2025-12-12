@@ -14,7 +14,7 @@ chat_history = []  # list of ChatMessage
 raw_text = ""      # last loaded document text
 llm = OpenRouterLLM()  # will raise if OPENROUTER_API_KEY not provided
 
-# ---------- Utility: simple chunker ----------
+
 def chunk_text(text: str, chunk_size: int = 800, overlap: int = 50):
     """
     Simple sliding-window chunker by characters. Returns list of chunks.
@@ -66,18 +66,16 @@ def load_document(url: str):
     global vector_store, raw_text, chat_history
     reset_chat_and_store()
 
-    # ---------------------------
     # 1. BASIC URL VALIDATION
-    # ---------------------------
+
     if not url.startswith("http://") and not url.startswith("https://"):
         return "❌ Invalid URL format. Please enter a valid http/https link."
 
     if not url.lower().endswith(".txt"):
         return "❌ Only .txt documentation files are supported."
 
-    # ---------------------------
     # 2. TRY FETCHING DOCUMENT
-    # ---------------------------
+
     import requests
     try:
         response = requests.get(url, timeout=10)
@@ -90,9 +88,9 @@ def load_document(url: str):
     except Exception as e:
         return f"❌ Unexpected network error: {e}"
 
-    # ---------------------------
+
     # 3. HTTP STATUS CHECK
-    # ---------------------------
+
     if response.status_code == 404:
         return "❌ Document not found (404). Please check the URL."
     elif response.status_code == 403:
@@ -100,16 +98,15 @@ def load_document(url: str):
     elif response.status_code != 200:
         return f"❌ Error loading document (HTTP {response.status_code})."
 
-    # ---------------------------
+
     # 4. TEXT VALIDATION
-    # ---------------------------
+
     text = response.text.strip()
     if len(text) < 20:
         return "❌ Document is empty or too short to index."
 
-    # ---------------------------
     # 5. VECTOR STORE SETUP
-    # ---------------------------
+
     raw_text = text
     chunks = chunk_text(text, chunk_size=1200, overlap=100)
 

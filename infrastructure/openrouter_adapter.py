@@ -29,7 +29,7 @@ class OpenRouterLLM:
             "max_tokens": max_tokens,
         }
         resp = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=30)
-        # try to raise for status
+
         resp.raise_for_status()
         data = resp.json()
         # The OpenRouter response is OpenAI-compatible: choices[0].message.content

@@ -8,18 +8,16 @@ import main  # contains load_document, rag_answer, chat_history
 
 st.set_page_config(page_title="Documentation RAG Assistant", layout="wide")
 
-# ------------------------------------------------------------
+
 # SESSION STATE INITIALIZATION
-# ------------------------------------------------------------
+
 if "chat" not in st.session_state:
     st.session_state.chat = []
 
 if "last_load_msg" not in st.session_state:
     st.session_state.last_load_msg = ""
 
-# ------------------------------------------------------------
-# DARK/LIGHT THEME SAFE CSS VARIABLES
-# ------------------------------------------------------------
+
 st.markdown("""
 <style>
 .user-bubble {
@@ -55,20 +53,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ------------------------------------------------------------
+
 # CALLBACK FOR SAFE INPUT CLEARING
-# ------------------------------------------------------------
+
 def submit_question():
     st.session_state.submitted_query = st.session_state.user_query
     st.session_state.user_query = ""
 
-
-# ------------------------------------------------------------
-# SIDEBAR — LOAD DOCUMENT
-# ------------------------------------------------------------
-# ------------------------------------------------------------
 # SIDEBAR — LOAD DOCUMENT (.txt)
-# ------------------------------------------------------------
+
 st.sidebar.header("📄 Load Documentation (.txt)")
 
 url = st.sidebar.text_input(
@@ -85,14 +78,19 @@ if st.sidebar.button("Load Document"):
         st.session_state.last_load_msg = msg
 
         if msg.startswith("✅"):
-            st.session_state.chat = []  # reset chat on new document
+            # SUCCESS → Reset chat normally
+            st.session_state.chat = []
             st.sidebar.success(msg)
         else:
+            # FAILURE → Reset chat AND disable chat UI
+            st.session_state.chat = []
+            st.session_state.last_load_msg = "❌ Failed to load document. Please try a different .txt URL."
             st.sidebar.error(msg)
 
-# ------------------------------------------------------------
+
+
 # MAIN TITLE
-# ------------------------------------------------------------
+
 st.title("🤖 Documentation RAG Assistant")
 st.caption("Ask questions strictly based on the loaded .txt documentation.")
 
@@ -102,9 +100,9 @@ if st.session_state.last_load_msg:
 st.write("---")
 
 
-# ------------------------------------------------------------
+
 # CHAT DISPLAY FUNCTION (Theme Adaptive)
-# ------------------------------------------------------------
+
 def render_message(role, text):
     if role == "User":
         st.markdown(
@@ -128,18 +126,18 @@ def render_message(role, text):
         )
 
 
-# ------------------------------------------------------------
+
 # SHOW CHAT HISTORY
-# ------------------------------------------------------------
+
 for role, text in st.session_state.chat:
     render_message(role, text)
 
 st.write("---")
 
 
-# ------------------------------------------------------------
+
 # DISABLE CHAT UNTIL DOCUMENT IS LOADED
-# ------------------------------------------------------------
+
 doc_loaded = st.session_state.last_load_msg.startswith("✅")
 
 if not doc_loaded:
@@ -159,9 +157,8 @@ else:
     )
 
 
-# ------------------------------------------------------------
 # HANDLE SUBMITTED QUESTION
-# ------------------------------------------------------------
+
 if doc_loaded and st.session_state.get("submitted_query"):
     query = st.session_state.submitted_query
     del st.session_state["submitted_query"]
